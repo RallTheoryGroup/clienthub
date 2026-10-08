@@ -1,0 +1,44 @@
+name: Release ClientHub
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        required: true
+permissions:
+  contents: read
+  id-token: write
+env:
+  APP: clienthub-rtg-aa
+  RG: rg-clienthub-ch11
+jobs:
+  staging:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - run: dotnet publish src/ClientHub -o out
+          -p:Version=${{ inputs.version }}
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.APP }}
+          slot-name: staging
+          package: out
+  production:
+    needs: staging
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - run: |
+          az webapp traffic-routing clear -g $RG -n $APP
+          az webapp deployment slot swap -g $RG -n $APP \
+            --slot staging --target-slot production
