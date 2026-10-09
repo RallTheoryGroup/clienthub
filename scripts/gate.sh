@@ -45,7 +45,7 @@ echo "$result"
   echo ""
   echo "Scope: staging hostname, this release, this run, after deployment."
 } >> "$GITHUB_STEP_SUMMARY"
-pass=$(jq -r '.[0].Pass // false' <<< "$result")
+pass=$(jq -r '.[0].Pass // false | tostring | ascii_downcase' <<< "$result")
 if [[ "$pass" != true ]]; then
   echo "Promotion blocked: unhealthy, missing or insufficient telemetry."
   exit 1
