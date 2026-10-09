@@ -1,4 +1,7 @@
 name: Release ClientHub
+concurrency:
+  group: clienthub-slots
+  cancel-in-progress: false
 on:
   workflow_dispatch:
     inputs:
