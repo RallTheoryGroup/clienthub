@@ -12,8 +12,8 @@ on:
         default: false
       gate:
         type: choice
-        options: [off, unhealthy, empty, insufficient, healthy]
-        default: off
+        options: ['off', unhealthy, empty, insufficient, healthy]
+        default: 'off'
 permissions:
   contents: read
   id-token: write
