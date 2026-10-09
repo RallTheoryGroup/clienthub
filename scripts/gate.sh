@@ -36,6 +36,15 @@ for ((attempt=1; attempt<=24; attempt++)); do
   sleep 20
 done
 echo "$result"
+{
+  echo "## ClientHub candidate telemetry"
+  echo "| Scenario | Requests | Failures | p95 ms | Pass |"
+  echo "|---|---:|---:|---:|---|"
+  jq -r --arg s "$SCENARIO" \
+    '.[0] | "| \($s) | \(.Total) | \(.Failed) | \(.P95Ms) | \(.Pass) |"' <<< "$result"
+  echo ""
+  echo "Scope: staging hostname, this release, this run, after deployment."
+} >> "$GITHUB_STEP_SUMMARY"
 pass=$(jq -r '.[0].Pass // false' <<< "$result")
 if [[ "$pass" != true ]]; then
   echo "Promotion blocked: unhealthy, missing or insufficient telemetry."

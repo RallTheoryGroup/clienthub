@@ -14,3 +14,5 @@ jq -n --arg v "$RELEASE" --arg id "$(uuidgen)" \
 az rest -m put -b @note.json -o none \
   -u "https://management.azure.com$AI_ID/Annotations?api-version=2015-05-01"
 echo "Healthy staging $RELEASE; deployment annotation written."
+echo "### ClientHub staging $RELEASE" >> "$GITHUB_STEP_SUMMARY"
+echo "Health and version verified; Deployment annotation written." >> "$GITHUB_STEP_SUMMARY"
