@@ -33,5 +33,10 @@ app.MapGet("/version", () => new
     version = typeof(Program).Assembly.GetName()
         .Version?.ToString(3)
 });
+if (builder.Configuration.GetValue<bool>("LAB_PROBES"))
+{
+    app.MapGet("/lab/probe", (bool fail = false) =>
+        fail ? Results.StatusCode(500) : Results.Ok("ClientHub probe"));
+}
 
 app.Run();
