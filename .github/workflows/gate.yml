@@ -1,0 +1,45 @@
+name: Evaluate ClientHub candidate
+on:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        type: choice
+        options: [unhealthy, empty, insufficient, healthy]
+        required: true
+      version:
+        required: true
+permissions:
+  contents: read
+  id-token: write
+env:
+  APP: clienthub-rtg-aa
+  RG: rg-clienthub-ch11
+jobs:
+  telemetry:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - run: bash scripts/gate.sh
+        env:
+          WORKSPACE_ID: ${{ vars.WORKSPACE_ID }}
+          RELEASE: ${{ inputs.version }}
+          SCENARIO: ${{ inputs.scenario }}
+  production:
+    needs: telemetry
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - run: |
+          az webapp deployment slot swap -g $RG -n $APP \
+            --slot staging --target-slot production
