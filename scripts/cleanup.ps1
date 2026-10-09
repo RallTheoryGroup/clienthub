@@ -28,7 +28,12 @@ foreach ($name in 'AZURE_CLIENT_ID','AZURE_TENANT_ID',
 }
 foreach ($environment in 'staging','production') {
     $items = gh variable list --env $environment --json name | ConvertFrom-Json
-    foreach ($item in $items) { gh variable delete $item.name --env $environment }
+    foreach ($item in $items) {
+        if ($item.name -in 'AZURE_CLIENT_ID','AZURE_TENANT_ID',
+            'AZURE_SUBSCRIPTION_ID','AI_ID','WORKSPACE_ID') {
+            gh variable delete $item.name --env $environment
+        }
+    }
 }
 Remove-Variable principal,assignments,account,variables
 Write-Output 'Owned app, monitoring resources, deployment identity, roles and Azure variables removed.'
